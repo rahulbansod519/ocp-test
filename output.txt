@@ -1,0 +1,95 @@
+[student@workstation ~]$ oc get pod jenkins-78986bb6fb-5grkr -o yaml | grep -i scc
+    openshift.io/scc: restricted
+[student@workstation ~]$ oc rsh jenkins-78986bb6fb-5grkr 
+sh-4.2$ id 
+uid=1000590000(1000590000) gid=0(root) groups=0(root),1000590000
+sh-4.2$ tail /etc/passwd
+halt:x:7:0:halt:/sbin:/sbin/halt
+mail:x:8:12:mail:/var/spool/mail:/sbin/nologin
+operator:x:11:0:operator:/root:/sbin/nologin
+games:x:12:100:games:/usr/games:/sbin/nologin
+ftp:x:14:50:FTP User:/var/ftp:/sbin/nologin
+nobody:x:99:99:Nobody:/:/sbin/nologin
+systemd-network:x:192:192:systemd Network Management:/:/sbin/nologin
+dbus:x:81:81:System message bus:/:/sbin/nologin
+jenkins:x:999:998:Jenkins Continuous Build server:/var/lib/jenkins:/bin/false
+1000590000:x:1000590000:0:1000590000 user:/var/lib/jenkins:/sbin/nologin
+sh-4.2$ ls -ld /var/lib/jenkins/
+drwxrwsrwx. 16 root 1000590000 4096 Apr 14 05:01 /var/lib/jenkins/
+sh-4.2$ ls -l /var/lib/jenkins/ | head -n20
+total 104
+-rw-r--r--.   1 1000590000 1000590000   475 Apr  9 15:36 com.cloudbees.hudson.plugins.folder.config.AbstractFolderConfiguration.xml
+-rw-r--r--.   1 1000590000 1000590000     0 Apr  9 15:35 configured
+-rw-r--r--.   1 1000590000 1000590000  9159 Apr 14 05:01 config.xml
+-rw-r--r--.   1 1000590000 1000590000  2578 Apr  9 15:35 config.xml.tpl
+-rw-r--r--.   1 1000590000 1000590000   856 Apr  9 15:35 credentials.xml
+-rw-r--r--.   1 1000590000 1000590000   311 Apr  9 15:35 credentials.xml.tpl
+-rw-r--r--.   1 1000590000 1000590000   156 Apr 14 05:01 hudson.model.UpdateCenter.xml
+-rw-r--r--.   1 1000590000 1000590000   370 Apr  9 15:36 hudson.plugins.git.GitTool.xml
+-rw-------.   1 1000590000 1000590000  1712 Apr  9 15:36 identity.key.enc
+-rw-r--r--.   1 1000590000 1000590000     5 Apr 14 05:01 image-version
+drwxr-sr-x.   2 1000590000 1000590000    39 Apr  9 15:35 init.groovy.d
+-rw-r--r--.   1 1000590000 1000590000  1500 Apr  9 15:35 jenkins.CLI.xml
+-rw-r--r--.   1 1000590000 1000590000     7 Apr 14 05:01 jenkins.install.InstallUtil.lastExecVersion
+-rw-r--r--.   1 1000590000 1000590000   171 Apr  9 15:36 jenkins.telemetry.Correlator.xml
+drwxr-sr-x.   3 1000590000 1000590000    30 Apr  9 15:35 jobs
+-rw-r--r--.   1 1000590000 1000590000   201 Apr  9 15:35 logging.properties
+drwxr-sr-x.   4 1000590000 1000590000    37 Apr  9 15:36 logs
+-rw-r--r--.   1 1000590000 1000590000   907 Apr 14 05:01 nodeMonitors.xml
+drwxr-sr-x.   2 1000590000 1000590000     6 Apr  9 15:36 nodes
+[student@workstation ~]$ oc describe project demo | grep -i scc
+			openshift.io/sa.scc.mcs=s0:c24,c19
+			openshift.io/sa.scc.supplemental-groups=1000590000/10000
+			openshift.io/sa.scc.uid-range=1000590000/10000
+[student@workstation ~]$ 
+[student@workstation ~]$ oc get pod jenkins-78986bb6fb-5grkr -o yaml | grep -iE 'scc|runasuser|serviceaccount'
+    openshift.io/scc: restricted
+      runAsUser: 1000590000
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+  serviceAccount: default
+  serviceAccountName: default
+[student@workstation ~]$ oc get pod jenkins-57556777c4-lz6bp -o yaml | grep -iE 'scc|runasuser|serviceaccount'
+    openshift.io/scc: anyuid
+        f:serviceAccount: {}
+        f:serviceAccountName: {}
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+  serviceAccount: jenkins
+  serviceAccountName: jenkins
+sh-4.2$ id
+uid=1001(1001) gid=0(root) groups=0(root)
+sh-4.2$ ls -ld /var/lib/jenkins/
+drwxrwxrwx. 16 root root 4096 Apr 14 05:34 /var/lib/jenkins/
+sh-4.2$ tail /etc/passwd
+halt:x:7:0:halt:/sbin:/sbin/halt
+mail:x:8:12:mail:/var/spool/mail:/sbin/nologin
+operator:x:11:0:operator:/root:/sbin/nologin
+games:x:12:100:games:/usr/games:/sbin/nologin
+ftp:x:14:50:FTP User:/var/ftp:/sbin/nologin
+nobody:x:99:99:Nobody:/:/sbin/nologin
+systemd-network:x:192:192:systemd Network Management:/:/sbin/nologin
+dbus:x:81:81:System message bus:/:/sbin/nologin
+jenkins:x:999:998:Jenkins Continuous Build server:/var/lib/jenkins:/bin/false
+1001:x:1001:0:1001 user:/var/lib/jenkins:/sbin/nologin
+sh-4.2$ ls -l /var/lib/jenkins/ | tail -n20
+-rw-r--r--.   1 1001 root  1500 Apr 14 05:33 jenkins.CLI.xml
+-rw-r--r--.   1 1001 root     7 Apr 14 05:33 jenkins.install.InstallUtil.lastExecVersion
+-rw-r--r--.   1 1001 root   171 Apr 14 05:33 jenkins.telemetry.Correlator.xml
+drwxr-xr-x.   3 1001 root    30 Apr 14 05:33 jobs
+-rw-r--r--.   1 1001 root   201 Apr 14 05:33 logging.properties
+drwxr-xr-x.   4 1001 root    37 Apr 14 05:33 logs
+-rw-r--r--.   1 1001 root   907 Apr 14 05:33 nodeMonitors.xml
+drwxr-xr-x.   2 1001 root     6 Apr 14 05:33 nodes
+-rw-r--r--.   1 1001 root   136 Apr 14 05:33 org.jenkinsci.main.modules.sshd.SSHD.xml
+-rw-r--r--.   1 1001 root   781 Apr 14 05:33 passwd
+-rw-r--r--.   1 1001 root    72 Apr 14 05:33 password
+drwxr-xr-x. 127 1001 root 12288 Apr 14 05:33 plugins
+-rw-r--r--.   1 1001 root    64 Apr 14 05:33 secret.key
+-rw-r--r--.   1 1001 root     0 Apr 14 05:33 secret.key.not-so-secret
+drwx------.   4 1001 root   193 Apr 14 05:33 secrets
+drwxr-xr-x.   2 1001 root   182 Apr 14 05:34 updates
+drwxr-xr-x.   2 1001 root    24 Apr 14 05:33 userContent
+drwxr-xr-x.   3 1001 root    56 Apr 14 05:33 users
+drwxr-xr-x.  11 1001 root  4096 Apr 14 05:33 war
+drwxr-xr-x.   2 1001 root     6 Apr 14 05:33 workflow-libs
+sh-4.2$ [student@workstation ~]$ 
+
